@@ -1,0 +1,47 @@
+---
+description: Public marketplace packaging — no private/internal details in plugin files
+alwaysApply: true
+---
+
+# Public Marketplace Packaging Hygiene
+
+This package is a **public** Cursor Marketplace / Grok Bot plugin. Treat every file, commit message, and PR description as public from day one.
+
+## What to Avoid
+
+**Never** include in plugin files, commit messages, PR bodies, or tool outputs:
+
+- Private GitHub repository links or internal monorepo paths
+- Internal issue, PR, or migration tracker IDs
+- Lab, client, or internal brand names
+- Authentication provider or account-system internals
+- Personal names, emails, or individual contributor attribution
+- DEV, staging, or non-production hostnames
+- "Private plugin" or "internal-only" framing language
+- Engineering deployment workflows or infrastructure details
+
+## What is Allowed
+
+- **Product name:** WisePPC
+- **Production MCP endpoint:** `https://mcp.wiseppc.com/mcp`
+- **Public marketing URLs:** `wiseppc.com`, `app.wiseppc.com`, `wiseppc.com/ai-integration`
+- **Public documentation** and marketplace-facing content
+- Generic technical terminology (OAuth, API keys, datasets, etc.)
+
+## Writing Guidelines
+
+- Use marketplace-ready wording in README, skills, rules, CHANGELOG, and PR descriptions
+- Frame features and changes from the **end user perspective** (what they can do, not how we built it)
+- Keep technical implementation details focused on **public APIs and user-facing behavior**
+- Do not document internal engineering workflows, private CI/CD systems, or company-specific processes
+- When referencing version history or past work, use public commit SHAs or version tags only
+
+## Commit & PR Standards
+
+- **Commit messages:** Describe the change functionally, not the internal ticket that prompted it
+- **PR titles:** Clear, public-safe feature or fix descriptions
+- **PR bodies:** Follow PR templates if present; no internal links or private context
+
+## When in Doubt
+
+If you're unsure whether something is public-safe, assume it's internal and omit it. Better to be conservative than to leak private details into public marketplace distribution.
