@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "wiseppc": {
+      "url": "https://mcp.wiseppc.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${WISEPPC_API_KEY}"
+      }
+    }
+  }
+}

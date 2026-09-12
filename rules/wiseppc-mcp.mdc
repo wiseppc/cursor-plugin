@@ -1,0 +1,59 @@
+---
+description: WisePPC MCP usage — no secrets in chat, prefer structured query, session context first, human review for writes
+alwaysApply: true
+---
+
+# WisePPC MCP
+
+## Security & Secrets
+
+- **Never** print, echo, paste, or log a WisePPC API key, Bearer token, or `wpp_ak_*` secret in chat, commits, logs, or tool outputs.
+- **Never** include secrets in `rationale`, `contextSnapshot`, `comment_on_action`, or any user-facing text.
+- If a tool returns a secret (API key, token, OAuth credential), **do not** echo it back to the user. Confirm receipt without revealing the value.
+
+## Session Start
+
+- **Always** call `get_session_context` with the selected `profileId` before analyzing or proposing changes on an account.
+- This loads preferences, benchmarks, pending actions, runbooks, and data-model gotchas in one round-trip.
+- Apply user preferences silently — do not announce them unless the user asks.
+
+## Data Query Best Practices
+
+- **Prefer structured `query`** over raw `run_query` SQL:
+  1. `list_datasets` — see available ads vs seller datasets
+  2. `describe_dataset` — get metrics, segments, grain, time coverage
+  3. `query` — build structured queries with `time_range`, `metrics`, `dimensions`, `granularity`
+- Use `run_query` **only** when `query` cannot express the ask (cross-table joins, window functions, arrays, advanced SQL).
+- Ads datasets require `profileId`. Seller datasets require `seller_id` + `marketplace_id` from `list_profiles` (`account_info_id`, `marketplace_string_id`).
+- **KDP accounts** have ads only — skip seller datasets if Seller Central is not connected.
+
+## Data Interpretation
+
+- **Currency is native:** Money values are in the advertising profile's native currency. Do not convert or mix currencies across profiles.
+- **`report_status` of `NOT_STARTED`** does not mean there is no data. It means the report generation has not been triggered yet. Check actual data coverage in `describe_dataset`.
+- **Seller vs KDP distinction:**
+  - **Seller:** Ads + Seller Central datasets (sales & traffic, economics, brand analytics, listing health)
+  - **KDP:** Ads only (no Seller Central datasets available)
+
+## Writes & Actions
+
+- **All Amazon writes** go only through `propose_action`. Nothing hits Amazon until a human approves in the WisePPC webapp.
+- **Never** call Amazon Ads write APIs directly. Use the proposal queue.
+- **Before proposing:**
+  1. Call `list_action_types` for the live registry and params schema
+  2. Include clear `rationale` (1–3 sentences) and `contextSnapshot` (the numbers you used)
+  3. After proposing, `wait_for_action_updates` or `list_proposed_actions` for review status
+- **If a reviewer declines or requests revision:**
+  - `cancel_proposed_action` the pending row
+  - Propose a replacement with updated rationale
+  - `comment_on_action` with the new action id
+  - Do not argue a decline
+
+## Catalog Health
+
+- Listing health checks are available via `get_health_check` (MCP-based, returns `listing_health` data).
+- This is **not** the same as full listing/catalog record management (planned for a future release).
+
+## Production Environment
+
+- This plugin connects to **production MCP:** `https://mcp.wiseppc.com/mcp`

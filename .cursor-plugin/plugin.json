@@ -1,0 +1,32 @@
+{
+  "name": "wiseppc",
+  "displayName": "WisePPC",
+  "version": "0.1.0",
+  "description": "Amazon Ads and seller analytics for WisePPC. Connects Cursor to the WisePPC MCP server for campaign performance, seller reports, and catalog health insights, then proposes ad changes for human approval in the WisePPC webapp.",
+  "author": {
+    "name": "Crystal Logistics Corp / WisePPC"
+  },
+  "homepage": "https://wiseppc.com",
+  "repository": "https://github.com/wiseppc/cursor-plugin",
+  "license": "UNLICENSED",
+  "logo": "assets/logo.svg",
+  "keywords": [
+    "amazon-ads",
+    "ppc",
+    "mcp"
+  ],
+  "category": "data-analytics",
+  "skills": "./skills/",
+  "rules": "./rules/",
+  "variables": {
+    "type": "object",
+    "properties": {
+      "WISEPPC_API_KEY": {
+        "type": "string",
+        "title": "WisePPC API key",
+        "description": "WisePPC API key (wpp_ak_…). Used as a Bearer token for https://mcp.wiseppc.com/mcp. Never commit this value."
+      }
+    },
+    "required": ["WISEPPC_API_KEY"]
+  }
+}
