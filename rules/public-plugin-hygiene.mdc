@@ -14,7 +14,7 @@ This package is a **public** Cursor Marketplace / Grok Bot plugin. Treat every f
 - Private GitHub repository links or internal monorepo paths
 - Internal issue, PR, or migration tracker IDs
 - Lab, client, or internal brand names
-- Authentication service internals (Cognito, account system details)
+- Authentication provider or account-system internals
 - Personal names, emails, or individual contributor attribution
 - DEV, staging, or non-production hostnames
 - "Private plugin" or "internal-only" framing language
