@@ -1,6 +1,6 @@
 ---
 name: connect-wiseppc
-description: Connect Cursor to WisePPC MCP via API key or OAuth. Use when setting up the plugin, minting a wpp_ak_ key, listing ads profiles, or starting a session.
+description: Connect Cursor to WisePPC MCP via API key or OAuth. Use when setting up the plugin, creating a wpp_ak_ key in the WisePPC webapp, listing ads profiles, or starting a session.
 ---
 
 # Connect WisePPC
@@ -55,7 +55,7 @@ If the user does not have a WisePPC account or Amazon connections, **stop trying
    ```
    get_session_context with profileId
    ```
-   Then proceed to analysis and proposals (approvals happen in WisePPC webapp)
+   Then proceed to analysis and changes (approvals happen in the WisePPC webapp)
 
 ### When Auth Fails
 
@@ -70,10 +70,7 @@ MCP accepts **API key** or **OAuth** to the WisePPC user.
 
 ### API Key Path
 
-API keys (`wpp_ak_*`) can be created:
-
-1. **WisePPC webapp:** Navigate to the **API keys** page and create a new key, or
-2. **MCP auto-generation:** After the user is authenticated via OAuth, MCP can mint a key for you.
+API keys (`wpp_ak_*`) are created in the **WisePPC webapp**: navigate to the **API keys** page and create a new key.
 
 Store a key only as the plugin variable `WISEPPC_API_KEY` (Plugins → Configure). **Never** ask them to paste it into chat. **Never** echo it back to the user.
 
@@ -89,14 +86,14 @@ Alternatively, authenticate via OAuth to the WisePPC user account. This is handl
    - Seller Central is connected (required for Seller datasets; KDP users skip this)
 
 2. **Authenticate:**
-   - **Option A:** Set `WISEPPC_API_KEY` in Cursor Plugins → Configure (from a webapp- or MCP-minted `wpp_ak_*` key)
+   - **Option A:** Set `WISEPPC_API_KEY` in Cursor Plugins → Configure (a `wpp_ak_*` key created in the WisePPC webapp)
    - **Option B:** Use OAuth to WisePPC (MCP handles the flow)
 
-3. **List business profiles** (if user manages multiple):
+3. **Choose a business profile** (if user manages multiple):
    ```
-   list_business_profiles
+   select_business_profile
    ```
-   Then `select_business_profile` to choose one for the session.
+   With no id it lists the business profiles; call it again with an id to choose one for the session.
 
 4. **List advertising profiles:**
    ```
@@ -104,11 +101,13 @@ Alternatively, authenticate via OAuth to the WisePPC user account. This is handl
    ```
    Returns advertising `profileId`s (one per marketplace). Note `currency_code` and `account_info_id` (seller_id for seller datasets).
 
-5. **Load session context** (before any analysis or proposals):
+5. **Load session context** (once, at session start, after picking a `profileId`):
    ```
    get_session_context with profileId
    ```
-   This loads preferences, benchmarks, pending actions, runbooks, and data-model gotchas in one round-trip. Apply preferences silently — do not announce them unless the user asks.
+   This loads preferences, account guidance, benchmarks, pending changes, runbooks, data-model gotchas, and the credential's current grants (`key_grants`) in one round-trip. Apply preferences silently — do not announce them unless the user asks. Refresh preferences with `list_preferences`; do not repeat `get_session_context` mid-session.
+
+6. **Know what the credential may do:** read `key_grants` rather than discovering limits by being refused. An OAuth session on the production server is read-only today (no `submit_mutation`); making changes needs an API key with write grants.
 
 ## Key Concepts
 

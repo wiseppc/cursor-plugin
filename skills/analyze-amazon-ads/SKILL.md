@@ -14,33 +14,34 @@ description: Analyze Amazon Ads and seller analytics through WisePPC. Use for ca
 
 ## Before You Start
 
-**Always** call `get_session_context` for the `profileId` if you have not already this session. This loads preferences, benchmarks, pending actions, runbooks, and data-model gotchas in one round-trip.
+Call `get_session_context` **once** at session start (after picking a `profileId`) if you have not already. It loads preferences, account guidance, benchmarks, pending changes, runbooks, data-model gotchas, and the credential's grants (`key_grants`) in one round-trip. Refresh preferences with `list_preferences`; do not repeat `get_session_context` mid-session.
 
 ## Query Best Practices
 
 ### Prefer Structured `query`
 
-The structured `query` tool is preferred over raw SQL `run_query`:
+The structured `query` tool is preferred over raw SQL `run_query`. A rejected `query` returns the legal vocabulary so you can self-correct:
 
-1. **`list_datasets`** — see available ads vs seller datasets
+1. **`describe_dataset` with no dataset** — lists the available ads vs seller datasets
    - Ads datasets: campaign performance, search terms, products, targeting, placements, etc.
    - Seller datasets: sales & traffic, economics, brand analytics, listing health (requires Seller Central connection)
 
-2. **`describe_dataset`** for the chosen dataset id:
+2. **`describe_dataset` with the chosen dataset id:**
    - Returns available metrics, segments (dimensions), grain, time coverage, and notes
    - Check `report_status` and `data_coverage` to understand freshness
 
 3. **`query`** with:
-   - `time_range` — start/end dates or relative periods (e.g., `last_7_days`, `last_30_days`)
+   - `time_range` — required `{start, end}` as ISO dates (`YYYY-MM-DD`), clamped to the account's available data
    - `metrics` — what to measure (e.g., `impressions`, `clicks`, `sales`, `acos`)
    - `dimensions` — how to group (e.g., `campaign_name`, `targeting_type`, `asin`)
-   - `granularity` — time bucket (e.g., `day`, `week`, `month`) or `total` for aggregates
-   - `filters` — narrow the scope (e.g., `campaign_name = 'Brand Defense'`)
-   - `limit` — cap rows returned (default 1000, max 10000)
+   - `granularity` — `total` (default, one row per dimension over the window), `daily`, `weekly`, or `monthly`
+   - `filters` — narrow the scope on dimensions, before aggregation (e.g., `{field: 'campaign_name', op: '=', value: 'Brand Defense'}`)
+   - `having` — filter on metrics after aggregation (metrics are not filtered in `filters`)
+   - `limit` — cap rows returned (default 100; clamped to the credential's maximum)
 
 ### When to Use Raw SQL (`run_query`)
 
-Use `run_query` **only** when `query` cannot express the ask:
+`run_query` is a normal read (covered by Amazon Ads read access), not a special opt-in. Use it **only** when `query` cannot express the ask, and call `describe_table` first for the tables, columns, and gotchas:
 
 - Cross-table joins (e.g., combining ads and seller datasets)
 - Window functions (e.g., `LAG`, `LEAD`, `ROW_NUMBER`)
@@ -64,7 +65,7 @@ Always include a comment explaining why `query` was insufficient.
 
 ## Catalog Health Checks
 
-Listing health checks are available via `get_health_check` (MCP-based, returns `listing_health` data). This is **not** the same as direct REST API access to SP listings/catalog endpoints (those are v0.2, not in production yet).
+Listing health checks are available via `get_health_check` (MCP-based, returns `listing_health` data). This is **not** full listing/catalog record retrieval (planned for a future release).
 
 ## Analysis Workflow
 
@@ -72,10 +73,11 @@ Listing health checks are available via `get_health_check` (MCP-based, returns `
    ```
    get_session_context with profileId
    ```
+   (once per session; skip if already done)
 
 2. **Explore available datasets:**
    ```
-   list_datasets with profileId or seller_id
+   describe_dataset with no dataset
    ```
 
 3. **Understand a dataset:**
@@ -85,7 +87,7 @@ Listing health checks are available via `get_health_check` (MCP-based, returns `
 
 4. **Run structured queries:**
    ```
-   query with time_range, metrics, dimensions, granularity, filters
+   query with time_range, metrics, dimensions, granularity, filters, having
    ```
 
 5. **Interpret results:**
@@ -97,7 +99,7 @@ Listing health checks are available via `get_health_check` (MCP-based, returns `
 
 **Do not propose Amazon writes from this skill.** That is `propose-ad-changes`.
 
-If analysis points at a concrete action (pause/enable, bid change, budget adjustment, negative keyword, etc.), switch to the **propose-ad-changes** skill and use `propose_action`.
+If analysis points at a concrete action (pause/enable, bid change, budget adjustment, negative keyword, etc.), switch to the **propose-ad-changes** skill and use `submit_mutation`.
 
 ## Security Reminders
 

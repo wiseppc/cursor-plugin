@@ -1,8 +1,8 @@
 {
   "name": "wiseppc",
   "displayName": "WisePPC",
-  "version": "0.1.0",
-  "description": "Amazon Ads and seller analytics for WisePPC. Connects Cursor to the WisePPC MCP server for campaign performance, seller reports, and catalog health insights, then proposes ad changes for human approval in the WisePPC webapp.",
+  "version": "0.1.1",
+  "description": "Amazon Ads and seller analytics for WisePPC. Connects Cursor to the WisePPC MCP server for campaign performance, seller reports, and catalog health insights, then submits ad changes that a person approves in the WisePPC webapp or that are sent directly, as your API key's grants decide.",
   "author": {
     "name": "Crystal Logistics Corp / WisePPC"
   },

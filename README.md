@@ -7,8 +7,8 @@ Connect Cursor AI to **WisePPC** (`https://mcp.wiseppc.com/mcp`) for Amazon Ads 
 ## What it does
 
 - **HTTP MCP** to production WisePPC, authenticated with a `wpp_ak_*` API key **or** OAuth to the WisePPC user
-- **Skills:** connect, analyze ads/seller data, propose ad changes for human review
-- **Rule:** no secrets in chat, prefer structured `query`, writes only via `propose_action`
+- **Skills:** connect, analyze ads/seller data, submit ad changes (approved by a person or sent directly, per your key's grants)
+- **Rule:** no secrets in chat, prefer structured `query`, session context once at start, writes only via `submit_mutation`
 - **Data:** Ads campaigns, seller reports, catalog health checks, performance analytics
 
 ## Who it's for
@@ -66,8 +66,6 @@ Without a WisePPC account and Amazon connections, the MCP tools cannot return yo
 3. **Create a new key** (starts with `wpp_ak_*`)
 4. **Store in Cursor config:** Plugins → Configure → set `WISEPPC_API_KEY`
 
-**Alternative:** After OAuth authentication, MCP can auto-generate a key for you.
-
 **Security:** Never paste API keys in chat, commits, or logs. Keys belong in Cursor's plugin config only.
 
 ### Developer Testing
@@ -97,42 +95,42 @@ Once installed and authenticated:
    select_business_profile
    ```
 
-3. **Get session context** (before any analysis):
+3. **Get session context** (once, before any analysis):
    ```
    get_session_context with profileId
    ```
-   Loads preferences, benchmarks, pending actions, runbooks, and data-model notes in one call.
+   Call it once at session start. It loads preferences, account guidance, pending changes, runbooks, benchmarks, data-model notes, and your key's current grants (`key_grants`) in one call. Refresh preferences with `list_preferences`.
 
 4. **Explore datasets:**
    ```
-   list_datasets → describe_dataset → query
+   describe_dataset (no dataset: list) → describe_dataset (one dataset) → query
    ```
 
-5. **Analyze & propose:**
+5. **Analyze & submit changes:**
    - Use the **analyze-amazon-ads** skill for performance questions
    - Use the **propose-ad-changes** skill when analysis suggests an action
 
 ---
 
-## What's in v0.1.0
+## What's in v0.1.1
 
 This release covers what is live on **production MCP today** (`https://mcp.wiseppc.com/mcp`):
 
 - ✅ **Ads analytics:** campaigns, search terms, products, targeting, placements
 - ✅ **Seller analytics:** sales & traffic, economics, brand analytics (requires Seller Central connection)
 - ✅ **Catalog health:** listing health checks via `get_health_check` (MCP-based)
-- ✅ **Structured query:** `list_datasets`, `describe_dataset`, `query` (preferred over raw SQL)
-- ✅ **Propose actions:** human-reviewed change queue via `propose_action`
+- ✅ **Structured query:** `describe_dataset`, `query` (preferred); raw SQL via `run_query` is a normal read
+- ✅ **Changes:** `submit_mutation` / `get_mutations` / `update_mutation`. Each granted write is **gated** (a person approves it in WisePPC) or **direct** (sent without review), decided by your API key's grants. OAuth sessions are read-only today
 - ✅ **Preferences & runbooks:** persistent account settings and guided workflows
-- ✅ **Session context:** `get_session_context` for full account snapshot
+- ✅ **Session context:** `get_session_context` once per session for the account snapshot and your grants
 
-### What's NOT in v0.1.0
+### What's NOT in v0.1.1
 
 - ❌ **Full Amazon listing and catalog record retrieval:** Complete Amazon-shaped payloads for listing and catalog items are not available yet
-  - v0.1.0 includes catalog **health** insights via `get_health_check` only
+  - v0.1.1 includes catalog **health** insights via `get_health_check` only
   - **Planned for a future release**
 
-> **Note:** v0.1.0 provides catalog health data (issue detection and recommendations), not full listing/catalog records. Full record retrieval delivers complete Amazon-stored details for each item.
+> **Note:** v0.1.1 provides catalog health data (issue detection and recommendations), not full listing/catalog records. Full record retrieval delivers complete Amazon-stored details for each item.
 
 ---
 
@@ -142,7 +140,7 @@ This release covers what is live on **production MCP today** (`https://mcp.wisep
 |-------|-------------|-------------|
 | **connect-wiseppc** | Set up authentication, list profiles, start session | First-time setup, session start |
 | **analyze-amazon-ads** | Query ads/seller data via structured datasets | Performance questions, health checks |
-| **propose-ad-changes** | Submit changes for human approval | Pause/enable, bids, budgets, negatives |
+| **propose-ad-changes** | Submit changes (gated approval or direct, per key grants) | Pause/enable, bids, budgets, negatives |
 
 ---
 
@@ -151,9 +149,9 @@ This release covers what is live on **production MCP today** (`https://mcp.wisep
 The plugin enforces these best practices:
 
 - **No secrets in chat:** Never echo API keys, tokens, or `wpp_ak_*` strings
-- **Prefer structured query:** Use `list_datasets` → `describe_dataset` → `query` over raw `run_query` SQL
-- **Human approval for writes:** All Amazon changes go through `propose_action` → webapp review
-- **Call session context first:** `get_session_context` before analyzing or proposing on an account
+- **Prefer structured query:** Use `describe_dataset` → `query` over raw `run_query` SQL
+- **Writes follow your grants:** All Amazon changes go through `submit_mutation`; each granted op is gated (webapp approval) or direct, and the key decides. Read `key_grants` instead of probing
+- **Session context once:** `get_session_context` at session start, not repeated mid-session (`list_preferences` refreshes preferences)
 - **Currency is native:** Money values are in the profile's native currency (no FX conversion)
 - **NOT_STARTED ≠ no data:** `report_status` of `NOT_STARTED` does not mean there is no data
 
