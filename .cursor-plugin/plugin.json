@@ -1,8 +1,8 @@
 {
   "name": "wiseppc",
   "displayName": "WisePPC",
-  "version": "0.1.5",
-  "description": "Amazon Ads and seller analytics for WisePPC. Connects Cursor to the WisePPC MCP server for campaign, search-term and product performance, seller reports (sales and traffic, economics, inventory, fees, brand analytics), Brand Store, A+ content, Amazon Attribution links and catalog health, guided runbooks, and whole listing and catalog records over the WisePPC REST API, then submits ad and seller listing changes that a person approves in the WisePPC webapp or that are sent directly, as your API key's grants decide.",
+  "version": "0.1.6",
+  "description": "Amazon Ads PPC management and Seller Central analytics in Cursor. Analyze campaigns, search terms, ASINs, listings, Brand Store and Attribution, then submit bid, budget, keyword, listing and creative asset changes through WisePPC, approved by a person or sent directly as your API key's grants decide.",
   "author": {
     "name": "Crystal Logistics Corp / WisePPC"
   },
@@ -11,12 +11,18 @@
   "license": "MIT",
   "logo": "assets/logo.svg",
   "keywords": [
-    "amazon-ads",
-    "amazon-seller",
-    "ppc",
+    "amazon",
     "analytics",
-    "brand-store",
-    "mcp"
+    "ppc",
+    "ads",
+    "advertisement",
+    "management",
+    "seller central",
+    "asin",
+    "listing",
+    "attribution",
+    "brand store",
+    "assets"
   ],
   "category": "data-analytics",
   "skills": "./skills/",
