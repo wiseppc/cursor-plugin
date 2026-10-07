@@ -112,7 +112,7 @@ Once installed and authenticated:
 
 ---
 
-## What's in v0.1.1
+## What's in v0.1.2
 
 This release covers what is live on **production MCP today** (`https://mcp.wiseppc.com/mcp`):
 
@@ -121,16 +121,17 @@ This release covers what is live on **production MCP today** (`https://mcp.wisep
 - ✅ **Catalog health:** listing health checks via `get_health_check` (MCP-based)
 - ✅ **Structured query:** `describe_dataset`, `query` (preferred); raw SQL via `run_query` is a normal read
 - ✅ **Changes:** `submit_mutation` / `get_mutations` / `update_mutation`. Each granted write is **gated** (a person approves it in WisePPC) or **direct** (sent without review), decided by your API key's grants. OAuth sessions are read-only today
+- ✅ **Fixing failed changes:** a change Amazon rejects stays on the WisePPC Queue with Amazon's response until a person dismisses it; the agent can submit a corrected revision linked to it, which always waits for approval
 - ✅ **Preferences & runbooks:** persistent account settings and guided workflows
 - ✅ **Session context:** `get_session_context` once per session for the account snapshot and your grants
 
-### What's NOT in v0.1.1
+### What's NOT in v0.1.2
 
 - ❌ **Full Amazon listing and catalog record retrieval:** Complete Amazon-shaped payloads for listing and catalog items are not available yet
-  - v0.1.1 includes catalog **health** insights via `get_health_check` only
+  - v0.1.2 includes catalog **health** insights via `get_health_check` only
   - **Planned for a future release**
 
-> **Note:** v0.1.1 provides catalog health data (issue detection and recommendations), not full listing/catalog records. Full record retrieval delivers complete Amazon-stored details for each item.
+> **Note:** v0.1.2 provides catalog health data (issue detection and recommendations), not full listing/catalog records. Full record retrieval delivers complete Amazon-stored details for each item.
 
 ---
 

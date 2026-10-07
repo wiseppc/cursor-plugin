@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.2] - 2026-10-07
+
+### Added
+
+- **Fixing a failed change:** a change that failed at Amazon now stays on the WisePPC Queue, with Amazon's own response, until a person dismisses it. The agent reads why it failed (`error_message`, `error_detail.amazon_response`, the `revision_chain`) and, when the row is `can_revise`, submits a corrected change with a new `idempotencyKey` and `metadata.revises` + `metadata.revision_comment` (what changed and why it should work now). A revision is one change of the same kind on the same account and profile, and always waits for a person's approval; it stops on `revision_limit_reached` or `already_revised`. Covered in the `wiseppc-mcp` rule and the **propose-ad-changes** skill (section 6).
+- `get_mutations(status="failed")` also lists revisions that were rejected, withdrawn or expired before they were sent; `open_failure: true` marks a failure that still needs attention.
+
+---
+
 ## [0.1.1] - 2026-10-06
 
 ### Changed

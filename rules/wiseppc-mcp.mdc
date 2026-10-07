@@ -52,6 +52,11 @@ alwaysApply: true
   - Submit a replacement with an updated rationale
   - `update_mutation` with `action=comment` on the new mutation id
   - Do not argue a decline
+- **If a change failed** (e.g. Amazon rejected it) and the row has `can_revise: true`, revise it rather than submitting an unrelated new change:
+  - Read why it failed first: `error_message`, `error_detail.amazon_response`, and for a partly applied change which items already went through
+  - `submit_mutation` with the corrected request, a new `idempotencyKey`, and `metadata.revises` (failed mutation id) + `metadata.revision_comment` (what changed and why it should work now); the row's `revise_with` shows the shape
+  - A revision is one change for the same operation family, account and profile, always waits for a person's approval, and keeps the failure as history (`revision_chain`)
+  - Cancelling a revision does not clear the failure; only a person can dismiss it. Stop and tell the user on `revision_limit_reached` or `already_revised`
 
 ## Catalog Health
 

@@ -117,7 +117,7 @@ Possible statuses:
 - `needs_revision` — a reviewer wants changes, see comments
 - `cancelled` — retracted before execution
 - `executing` / `executed` — being applied / applied to Amazon
-- `failed` — execution error, see the reason and details
+- `failed` — execution error, see the reason and details; revise it if the row says `can_revise` (see "Fix a Failed Change")
 
 Entries are immutable; follow replacement links rather than expecting a row to change.
 
@@ -142,6 +142,23 @@ If a reviewer declines or requests revision:
    ```
 
 Do not argue with reviewers. They have business context, risk tolerance, and strategic goals you may not be aware of.
+
+### 6. Fix a Failed Change
+
+When a change failed (for example Amazon rejected it) and the row has `can_revise: true`, revise it instead of submitting an unrelated new change. The failure stays as history, linked to the fix, so the same mistake is not repeated.
+
+1. **Read why it failed:** `get_mutations` with the `mutationId`. Look at `error_message`, `error_detail.amazon_response` and, for a partly applied change, which items already went through. `get_mutations` with `status: "failed"` lists failures; `open_failure` marks the ones still open.
+
+2. **Submit the revision:**
+   ```
+   submit_mutation with:
+     - operation and the corrected request
+     - a new idempotencyKey
+     - metadata: { rationale, revises: <failed mutationId>, revision_comment: <what changed and why it should work now> }
+   ```
+   The failed row's `revise_with` shows the shape. A revision holds one change for the same operation family, account and profile, and always waits for a person's approval.
+
+3. **Follow the chain:** reading one mutation by id returns `revision_chain` (every earlier attempt with its error). A revision that was rejected, withdrawn or expired before it was sent can itself be revised. Cancelling a revision does not clear the failure; only a person can dismiss it. On `revision_limit_reached` or `already_revised`, stop and tell the user.
 
 ## User Preferences
 
