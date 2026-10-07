@@ -21,31 +21,36 @@ alwaysApply: true
 ## Data Query Best Practices
 
 - **Prefer structured `query`** over raw `run_query` SQL:
-  1. `describe_dataset` with no dataset — see available ads vs seller datasets
-  2. `describe_dataset` with a dataset — get metrics, segments, grain, time coverage
-  3. `query` — build structured queries with `time_range`, `metrics`, `dimensions`, `granularity`
-- Raw SQL via `run_query` is a normal read (covered by Amazon Ads read access). Use it **only** when `query` cannot express the ask (cross-table joins, window functions, arrays, advanced SQL); call `describe_table` first to see the tables and columns.
+  1. `describe_dataset` with no `dataset` — the index of available datasets (Ads and seller)
+  2. `describe_dataset` with a `dataset` — metrics, segments, grain, time coverage, gotchas (`expand` returns full entries for named fields)
+  3. `query` — build structured queries with `time_range`, `metrics`, `dimensions`, `granularity`, `filters`, `having`, `sort`, `compare`
+- Customer **search terms** live in the `searchterm` dataset. Do not look for them in `ads_olap`.
+- Raw SQL via `run_query` is an escape hatch: use it **only** when `query` cannot express the ask (cross-table joins, window functions, arrays); call `describe_table` first to see the tables and columns. Raw SQL can be a separate permission on the credential: check `key_grants` from `get_session_context`, and if it is not granted, stay with `query` and tell the user what to widen rather than retrying.
 - Ads datasets require `profileId`. Seller datasets require `seller_id` + `marketplace_id` from `list_profiles` (`account_info_id`, `marketplace_string_id`).
-- **KDP accounts** have ads only — skip seller datasets if Seller Central is not connected.
+- **KDP accounts** have ads only — skip seller datasets if Seller Central is not connected. **Vendor** accounts (1P) have no Seller Central either: seller datasets, A+ content, listings and product type definitions do not apply to them. `list_profiles` returns each profile's `account_type`.
+- To see current entity settings, use `list_campaigns` / `get_campaign_details`, or `get_ads_entities` for Amazon Ads API objects (campaigns, ad groups, ads, targets, portfolios, creative assets).
 
 ## Data Interpretation
 
 - **Currency is native:** Money values are in the advertising profile's native currency. Do not convert or mix currencies across profiles.
 - **`report_status` of `NOT_STARTED`** does not mean there is no data. It means the report generation has not been triggered yet. Check actual data coverage in `describe_dataset`.
+- **The newest days are thinner.** Recent days can carry fewer metrics than settled days; check the dataset's gotchas before comparing the last few days to older ones.
+- **Do not add metrics from two datasets together.** Search-term metrics are a split of the same clicks that `ads_performance` reports; summing across datasets double-counts.
 - **Seller vs KDP distinction:**
   - **Seller:** Ads + Seller Central datasets (sales & traffic, economics, brand analytics, listing health)
   - **KDP:** Ads only (no Seller Central datasets available)
 
 ## Writes & Changes
 
-- **All Amazon writes** go only through `submit_mutation`. **Never** call Amazon Ads write APIs directly.
+- **Ads writes** go only through `submit_mutation` (including `ads.*.create` / `ads.*.delete`, built campaign, ad group, ads, then targets; deletes cannot be undone). **Seller listing writes** (`sp.listings.put` / `patch` / `delete`) go through the WisePPC REST listings route with the same API key, never through `submit_mutation`; `x-wiseppc-reason` carries the rationale. **Never** call Amazon's write APIs directly.
 - **The credential's grants decide** how each write op is handled: **gated** (a person approves it in the WisePPC webapp before anything is sent) or **direct** (queued and sent without review). `submit_mutation` cannot ask; a request naming `mode` is refused (`mode_not_accepted`). Ops in one call that resolve to different modes answer `split_request` — send them separately.
-- **Approving is human-only.** An OAuth session on the production server is read-only today (no `submit_mutation`); writes need an API key with write grants.
+- **Approving is human-only.** An OAuth session is read-only (no `submit_mutation`); writes need an API key with write grants. In an OAuth session, describe the proposed change in words.
 - **Before submitting:**
-  1. Read `key_grants` from `get_session_context` to see which write ops are granted; do not probe by being refused
-  2. Call `list_mutation_types` for the live operations and request schemas
-  3. Include a clear `rationale` (1–3 sentences) and `contextSnapshot` (the numbers you used) in `metadata`
-  4. After submitting, track it with `get_mutations` (list, one by id, or `waitSeconds` to long-poll)
+  1. Read `key_grants` from `get_session_context` to see which write ops are granted (Ads writes per profile, seller writes per seller and marketplace); do not probe by being refused
+  2. Read the entity first with `get_ads_entities` (or `get_brand_store_page` for a Brand Store page) so the request matches what exists today
+  3. Call `list_mutation_types` for the live operations and request schemas
+  4. Include a clear `rationale` (1–3 sentences) and `contextSnapshot` (the numbers you used) in `metadata`
+  5. After submitting, track it with `get_mutations` (list, one by id, or `waitSeconds` to long-poll)
 - **Refusals** lead with a reason code. None are retryable and none are your error: name the missing permission and let the user decide whether to widen the credential.
 - **If a reviewer declines or requests revision:**
   - `update_mutation` with `action=cancel` on the pending row
@@ -58,10 +63,18 @@ alwaysApply: true
   - A revision is one change for the same operation family, account and profile, always waits for a person's approval, and keeps the failure as history (`revision_chain`)
   - Cancelling a revision does not clear the failure; only a person can dismiss it. Stop and tell the user on `revision_limit_reached` or `already_revised`
 
-## Catalog Health
+- **Multi-Channel Fulfillment cancel** (`sp.fulfillment.cancel`) is direct only: no review, it stops a real shipment. Confirm with the user before submitting.
+- Raw SQL, MCF orders and other principals' queue rows are separate key opt-ins, visible in `key_grants`.
 
-- Listing health checks are available via `get_health_check` (MCP-based, returns `listing_health` data).
-- This is **not** the same as full listing/catalog record management (planned for a future release).
+## Catalog, Content & Attribution
+
+- `get_health_check` — account and listing health alerts (budget, waste, inventory, listing issues, performance, anomalies). Good first call for "what should I focus on?".
+- `get_change_history` — field changes WisePPC observed on one seller listing (`sku` + `sellerId`) or one catalog item (`asin`); `marketplaceId` is required.
+- `get_aplus_content` — A+ Content documents (read-only; API key required). `product_type_definitions` — stored Amazon category schemas (API key required).
+- `get_brand_store_page` — one Brand Store page's content from a nightly snapshot of the draft.
+- `get_attribution_link` — Amazon Attribution tracked product URLs. It never enrols an advertiser.
+- For a **whole** listing or catalog record, use the WisePPC REST API with the same API key (`https://mcp.wiseppc.com/api/v1`, `/sp/listings/2021-08-01/items/{sellerId}/{sku}` and `/sp/catalog/2022-04-01/items/{asin}`): API key only, one marketplace per request, Amazon-shaped. MCP results are size-capped.
+- `get_runbook` lists the guided runbooks; read the runbook before writing its queries.
 
 ## Production Environment
 

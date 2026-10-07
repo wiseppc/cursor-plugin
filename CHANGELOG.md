@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.4] - 2026-10-07
+
+### Changed
+
+- The plugin icon is now square, so it is no longer cropped in the marketplace.
+- **Installation:** install from cursor.directory, or from this repository as a local plugin (Teams and Enterprise admins can import it into a team marketplace).
+- **Raw SQL:** `run_query` is described as an escape hatch that can be a separate permission on your API key (check `key_grants`); `query` stays the default. The previous wording called it a normal read.
+- **Argument names corrected:** `describe_dataset` takes `dataset` (not `dataset_id`); the skills now spell out `query`'s `compare`, `sort`, `offset`, `format` and `round`, and `get_runbook`'s `runbook_id`.
+- **Permissions:** the skills and rule now say that grants live on the key (reads per account or seller and marketplace, writes per operation on one profile or marketplace), that a listed tool can still refuse a target, and that an OAuth session is read-only.
+- **Catalog health:** the old "not available yet" wording is replaced by what exists today: `get_health_check`, `get_change_history`, and the `listing_item` dataset.
+- **Listing and catalog records:** the "full listing/catalog record retrieval is not available" wording is replaced. Whole Amazon-shaped records come from the WisePPC REST API with the same API key; MCP tool results stay size-capped.
+- Skill descriptions and the rule were widened so the plugin is picked up for listing edits, create/delete, Multi-Channel Fulfillment and runbook questions.
+- README: removed the local developer-testing section.
+
+### Added
+
+- **Dataset guide** in **analyze-amazon-ads**: Ads performance, search terms (`searchterm`, not `ads_olap`), entity settings, change history, impression share, Attribution, Brand Store and brand metrics, and the seller datasets (sales and traffic, economics, transactions, inventory, fees, returns, reimbursements, Brand Analytics), with the main gotchas (search-term metrics are not additive with performance metrics, the newest days are thinner).
+- **Seller-side analytics**, **Brand Store**, **A+ content** (`get_aplus_content`) and **Amazon Attribution links** (`get_attribution_link`) coverage, plus `get_health_check`, `get_product_performance`, `get_unadvertised_products` and `get_change_history` pointers.
+- **`get_ads_entities`** as the read that pairs with `submit_mutation`: read campaigns, ad groups, ads, targets, portfolios and creative assets as Amazon Ads objects before changing them.
+- **Whole records over REST** in **connect-wiseppc** (pointers in **analyze-amazon-ads**): the same API key works on `https://mcp.wiseppc.com/api/v1` for complete Amazon-shaped listing (`/sp/listings/2021-08-01/items/...`) and catalog item (`/sp/catalog/2022-04-01/items/...`) records. API key only, one marketplace per request.
+- **Seller listing writes** in **propose-ad-changes**: `sp.listings.put` / `patch` / `delete` through the REST listings route, grants per field group (title, bullet points, description, price, quantity, Item Highlight, other, create, delete), what a PUT requires, delete always reviewed, read the listing first, and a rationale with every change.
+- **Ads create and delete** in **propose-ad-changes**: campaigns, ad groups, ads and targets (build order campaign, ad group, ads, targets; deletes cannot be undone) and portfolio create/update.
+- **Multi-Channel Fulfillment** in **propose-ad-changes** and **analyze-amazon-ads**: `sp.fulfillment.cancel` is direct only with no review (confirm with the user first); reading MCF orders is a separate sensitive opt-in over REST only.
+- **Account types** in **connect-wiseppc**: Seller, Vendor, Agency and KDP; Vendors have no Seller Central, so seller datasets, A+ content, listings and product type definitions do not apply.
+- **Runbook list** in **analyze-amazon-ads**: each runbook id with the question it answers, and "read the runbook before writing its queries".
+- **Key opt-ins** in **connect-wiseppc**: raw SQL, MCF orders and other principals' queue rows are separate opt-ins, visible in `key_grants`.
+- **Other kinds of change** in **propose-ad-changes**: automation rules (`ads.rules.*`), Brand Store page ASIN edits (draft only) and creative asset uploads (always reviewed), where your key is granted them.
+
+---
+
 ## [0.1.3] - 2026-10-07
 
 ### Changed
