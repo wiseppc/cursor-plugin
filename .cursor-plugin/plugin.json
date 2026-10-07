@@ -1,7 +1,7 @@
 {
   "name": "wiseppc",
   "displayName": "WisePPC",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Amazon Ads and seller analytics for WisePPC. Connects Cursor to the WisePPC MCP server for campaign, search-term and product performance, seller reports (sales and traffic, economics, inventory, fees, brand analytics), Brand Store, A+ content, Amazon Attribution links and catalog health, guided runbooks, and whole listing and catalog records over the WisePPC REST API, then submits ad and seller listing changes that a person approves in the WisePPC webapp or that are sent directly, as your API key's grants decide.",
   "author": {
     "name": "Crystal Logistics Corp / WisePPC"

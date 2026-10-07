@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.5] - 2026-10-07
+
+### Changed
+
+- The plugin icon now has a white background, so it reads clearly on light and dark pages.
+
+---
+
 ## [0.1.4] - 2026-10-07
 
 ### Changed
