@@ -112,7 +112,7 @@ Once installed and authenticated:
 
 ---
 
-## What's in v0.1.2
+## What's in v0.1.3
 
 This release covers what is live on **production MCP today** (`https://mcp.wiseppc.com/mcp`):
 
@@ -125,13 +125,13 @@ This release covers what is live on **production MCP today** (`https://mcp.wisep
 - ✅ **Preferences & runbooks:** persistent account settings and guided workflows
 - ✅ **Session context:** `get_session_context` once per session for the account snapshot and your grants
 
-### What's NOT in v0.1.2
+### What's NOT in v0.1.3
 
 - ❌ **Full Amazon listing and catalog record retrieval:** Complete Amazon-shaped payloads for listing and catalog items are not available yet
-  - v0.1.2 includes catalog **health** insights via `get_health_check` only
+  - v0.1.3 includes catalog **health** insights via `get_health_check` only
   - **Planned for a future release**
 
-> **Note:** v0.1.2 provides catalog health data (issue detection and recommendations), not full listing/catalog records. Full record retrieval delivers complete Amazon-stored details for each item.
+> **Note:** v0.1.3 provides catalog health data (issue detection and recommendations), not full listing/catalog records. Full record retrieval delivers complete Amazon-stored details for each item.
 
 ---
 
@@ -172,4 +172,4 @@ This plugin connects to **production MCP only:** `https://mcp.wiseppc.com/mcp`
 
 ## License
 
-**Proprietary.** All Rights Reserved. Crystal Logistics Corp / WisePPC.
+MIT. Copyright (c) 2026 Crystal Logistics Corp / WisePPC. See [LICENSE](LICENSE).

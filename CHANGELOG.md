@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.3] - 2026-10-07
+
+### Changed
+
+- **License:** the plugin is now released under the MIT license: you may use, copy, modify and redistribute it without restriction.
+
+---
+
 ## [0.1.2] - 2026-10-07
 
 ### Added
