@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0] - 2026-11-22
+
+### Changed
+
+- The skills, the rule and the README use the current WisePPC tool names. The agent picks an account with the `target` that `get_session_context` returns, and uses `describe`, `get_entities`, `get_report`, `get_history`, `get_marketplace_data` and `run_sql` where it used older names that stop working after 2026.
+- Changes are explained as they work today, for an API key and a sign-in (OAuth) connection alike: by default every change waits for a person's approval in WisePPC, and an owner or admin can set an operation to direct or off under **AI Integration → Connections & Permissions**. A sign-in connection is no longer described as read-only.
+- A sign-in connection can use the WisePPC REST API (whole listing and catalog records, listing edits) with a short-lived token from `issue_rest_token`; the REST API is no longer described as API-key only.
+- Updated facts: deletes always wait for a person's approval; creative asset uploads, Multi-Channel Fulfillment cancels and fixes of failed changes follow the connection's permissions like other changes; personal data (including Multi-Channel Fulfillment orders) is the one opt-in, and raw SQL is an ordinary read.
+- A key or sign-in connection belongs to one business, so the setup steps no longer ask the agent to choose a business profile.
+- The README's feature list is titled "What's included" instead of naming an old version, and a new section explains how changes follow your connection's permissions.
+- The plugin description no longer assumes an API key.
+- Sign-in from Cursor is not available yet; use an API key.
+- Links point to the new WisePPC MCP pages: [wiseppc.com/mcp](https://wiseppc.com/mcp/) (product, also the plugin homepage) and [wiseppc.com/docs/mcp](https://wiseppc.com/docs/mcp/) (technical overview).
+- API keys are created under **AI Integration → Connections & Permissions** in the WisePPC webapp; setup steps now use that name.
+- Skills no longer tell the agent to redact customer emails and phone numbers from results: that data is the user's own, and the credential's opt-ins decide what arrives. It stays out of submissions, since approvers may not hold that opt-in.
+
 ## [0.1.6] - 2026-10-07
 
 ### Changed
