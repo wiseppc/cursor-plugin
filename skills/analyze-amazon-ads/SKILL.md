@@ -28,7 +28,7 @@ The structured `query` tool is preferred over raw SQL `run_sql`. A rejected `que
 
 1. **`describe(kind="datasets")`** — the index of datasets (id, domain, grain; a snapshot dataset has no time series). Dataset families:
    - **Ads performance:** `ads_performance`, `searchterm` (customer search terms), `product_performance`, `conversion_performance`
-   - **Ads entities (current settings):** `ads_campaigns`, `ads_ad_groups`, `ads_targets`, `ads_ads`, `ads_negatives`, `ads_portfolios`, plus `ads_change_history`
+   - **Ads entities (current settings):** `ads_structure` (every level, from portfolio to target, in one place), `ads_negatives`, plus `ads_change_history`. The per-level datasets `ads_campaigns`, `ads_ad_groups`, `ads_targets`, `ads_ads` and `ads_portfolios` still answer and are what the runbooks use
    - **Ads reach & off-Amazon:** `top_of_search_impression_share`, `search_impression_share`, Amazon Attribution (`amazon_attribution*`)
    - **Ads products:** `product_selector`, `product_selector_history`
    - **Brand health & Brand Store:** `amazon_brand_metrics*`, `amazon_brand_store*` — where your account has them
@@ -110,7 +110,7 @@ Listing health checks are available via `get_report(report="health_check")` (ret
 
 ## Whole Listing and Catalog Records
 
-MCP tool results are size-capped. For a complete Amazon-shaped listing or catalog item, use the WisePPC REST API: `GET /sp/listings/2021-08-01/items/{sellerId}/{sku}` and `GET /sp/catalog/2022-04-01/items/{asin}` on `https://mcp.wiseppc.com/api/v1` (one marketplace per request), with the API key, or in a sign-in connection with a short-lived token from `issue_rest_token`. The **connect-wiseppc** skill has the details. Read a listing this way before proposing a listing change.
+MCP tool results are size-capped. For a complete Amazon-shaped listing or catalog item, use the WisePPC REST API: `GET /sp/listings/2021-08-01/items/{sellerId}/{sku}` and `GET /sp/catalog/2022-04-01/items/{asin}` on `https://mcp.wiseppc.com/api/v1` (one marketplace per request), in a sign-in connection with a short-lived token from `issue_rest_token`, or with the API key on a key connection. The **connect-wiseppc** skill has the details. Read a listing this way before proposing a listing change.
 
 ## Multi-Channel Fulfillment
 

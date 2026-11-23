@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] - 2026-11-22
+
+### Changed
+
+- Sign in with your WisePPC account instead of an API key. If you set an API key in an earlier version, sign in once from Cursor's MCP settings.
+- Setup is now: install the plugin, sign in next to `wiseppc` in Cursor's MCP settings, then choose the business on WisePPC's approval page and connect. From the command line: `cursor-agent mcp enable wiseppc`, then `cursor-agent mcp login wiseppc`.
+- The plugin no longer asks for an API key. To keep using a key, add your own server entry with the key to `~/.cursor/mcp.json` and disable the plugin's `wiseppc` server; the README shows how. Keys still work for the WisePPC REST API.
+- Corrected: seller listing edits and deletes go through `submit_mutation`, one SKU or a batch of up to 100. Only a whole-listing create or replace (`sp.listings.put`) needs the REST listings route.
+- The dataset list names `ads_structure`, which holds every Ads level from portfolio to target in one place.
+
 ## [0.2.0] - 2026-11-22
 
 ### Changed

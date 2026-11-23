@@ -43,8 +43,8 @@ alwaysApply: true
 
 ## Writes & Changes
 
-- **Ads writes** go only through `submit_mutation` (including `ads.*.create` / `ads.*.delete`, built campaign, ad group, ads, then targets; deletes cannot be undone). **Seller listing writes** (`sp.listings.put` / `patch` / `delete`) go through the WisePPC REST listings route, never through `submit_mutation`; `x-wiseppc-reason` carries the rationale. **Never** call Amazon's write APIs directly.
-- **The connection's permissions decide** how each write is handled, for an API key and a sign-in (OAuth) connection alike. By default every write on what the connection can read is **gated**: a person approves it in WisePPC before anything is sent. An owner or admin can set one operation to **direct** (queued and sent without review) or **off** in **AI Integration → Connections & Permissions**. `submit_mutation` cannot ask; a request naming `mode` is refused (`mode_not_accepted`). Ops in one call that resolve to different modes answer `split_request` — send them separately.
+- **Ads writes** go only through `submit_mutation` (including `ads.*.create` / `ads.*.delete`, built campaign, ad group, ads, then targets; deletes cannot be undone). **Seller listing edits and deletes** (`sp.listings.patch` / `delete`) also go through `submit_mutation`, with one `sku` or `items` (1 to 100). Only a whole-listing **PUT** (`sp.listings.put`: create a SKU or replace a listing) is REST-only: `submit_mutation` refuses it with `use_the_listings_route`, which names the route, and `x-wiseppc-reason` carries the rationale there. **Never** call Amazon's write APIs directly.
+- **The connection's permissions decide** how each write is handled, for a sign-in (OAuth) connection and an API key alike. By default every write on what the connection can read is **gated**: a person approves it in WisePPC before anything is sent. An owner or admin can set one operation to **direct** (queued and sent without review) or **off** in **AI Integration → Connections & Permissions**. `submit_mutation` cannot ask; a request naming `mode` is refused (`mode_not_accepted`). Ops in one call that resolve to different modes answer `split_request` — send them separately.
 - **Approving is human-only.** You cannot approve a change.
 - **Before submitting:**
   1. Read `key_grants` from `get_session_context`: `write_default` (`gated` or `off`) and the exceptions in the `write_for_*` lists; `section="grants"` shows each unit's operations and modes. Do not probe by being refused
@@ -74,7 +74,7 @@ alwaysApply: true
 - `get_marketplace_data(resource="aplus_content")` — A+ Content documents (read-only). `get_marketplace_data(resource="product_type_definitions")` — stored Amazon category schemas.
 - `get_entities(entity="brand_store_page")` — one Brand Store page's content from a nightly snapshot of the draft.
 - `get_report(report="attribution_link")` — Amazon Attribution tracked product URLs. It never enrols an advertiser.
-- For a **whole** listing or catalog record, use the WisePPC REST API (`https://mcp.wiseppc.com/api/v1`, `/sp/listings/2021-08-01/items/{sellerId}/{sku}` and `/sp/catalog/2022-04-01/items/{asin}`): with the API key, or in a sign-in connection with a short-lived token from `issue_rest_token`. One marketplace per request, Amazon-shaped. MCP results are size-capped.
+- For a **whole** listing or catalog record, use the WisePPC REST API (`https://mcp.wiseppc.com/api/v1`, `/sp/listings/2021-08-01/items/{sellerId}/{sku}` and `/sp/catalog/2022-04-01/items/{asin}`): in a sign-in connection with a short-lived token from `issue_rest_token`, or with the API key on a key connection. One marketplace per request, Amazon-shaped. MCP results are size-capped.
 - `describe(kind="runbooks")` lists the guided runbooks; read the runbook (`id`) before writing its queries.
 
 ## Production Environment

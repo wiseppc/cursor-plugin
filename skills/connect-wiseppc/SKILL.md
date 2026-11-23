@@ -1,6 +1,6 @@
 ---
 name: connect-wiseppc
-description: Connect Cursor to WisePPC MCP via API key or OAuth. Use when setting up the plugin, creating a wpp_ak_ key in the WisePPC webapp, checking what a connection may read or change (key_grants, opt-ins), listing ads profiles and their target ids, telling Seller, Vendor, Agency and KDP accounts apart, or when a task needs a whole Amazon listing or catalog record through the WisePPC REST API.
+description: Connect Cursor to WisePPC MCP by signing in with a WisePPC account (or with an API key). Use when setting up the plugin, signing in from Cursor's MCP settings, connecting with a wpp_ak_ key instead, checking what a connection may read or change (key_grants, opt-ins), listing ads profiles and their target ids, telling Seller, Vendor, Agency and KDP accounts apart, or when a task needs a whole Amazon listing or catalog record through the WisePPC REST API.
 ---
 
 # Connect WisePPC
@@ -8,7 +8,7 @@ description: Connect Cursor to WisePPC MCP via API key or OAuth. Use when settin
 ## When to use
 
 - First-time plugin setup
-- User needs a WisePPC API key or OAuth session
+- User needs to sign in to WisePPC from Cursor, or wants to use an API key instead
 - Session start before ads or seller analysis
 - Listing available profiles and their `target` ids
 
@@ -44,10 +44,7 @@ If the user does not have a WisePPC account or Amazon connections, **stop trying
    - This enables seller analytics (sales & traffic, economics, transactions, inventory, fees, brand analytics, listing health)
    - **KDP authors** who only run ads (no physical/book selling via Seller Central) can skip this step; so can **Vendors** (1P accounts have no Seller Central)
 
-4. **Authenticate the plugin** (choose one):
-   - **Option A (API key):** In the WisePPC webapp, open **AI Integration → Connections & Permissions** → create a new key → set `WISEPPC_API_KEY` in Cursor **Plugins → Configure**
-   - **Sign-in (OAuth) from Cursor is coming soon.** Until then, use an API key (Option A)
-   - **Never** paste keys into chat or commit them to code
+4. **Sign in from Cursor** (see "Sign In" below): open Cursor's MCP settings and sign in (connect) next to the `wiseppc` server, then choose the business on WisePPC's approval page and connect. No API key is needed. (Using a key instead is described under "API Key Instead".)
 
 5. **Verify connection:**
    ```
@@ -61,28 +58,36 @@ If the user does not have a WisePPC account or Amazon connections, **stop trying
 
 If MCP tools return authentication errors or no accounts:
 - **First-time users:** Walk them through the cold-start flow above
-- **Existing users:** Verify their `WISEPPC_API_KEY` is set correctly in Cursor config (sign-in from Cursor is not available yet)
+- **Existing users:** ask them to sign in again from Cursor's MCP settings (next to `wiseppc`). If they connected an API key in an earlier plugin version, that key is no longer read by the plugin: sign in once, or use the key as described under "API Key Instead"
+- **Key users:** check that their own `~/.cursor/mcp.json` entry carries the key and that the plugin's `wiseppc` server is disabled, so only one connection is active
 - **Do not invent analytics.** Stop trying tools until authentication succeeds.
 
 ## Authentication
 
-MCP accepts **API key** or **OAuth** to the WisePPC user.
+The plugin connects by **signing in** with the user's WisePPC account (OAuth). The plugin itself holds no key. A WisePPC **API key** is the alternative, set up by the user outside the plugin.
 
-### API Key Path
+### Sign In
 
-API keys (`wpp_ak_*`) are created in the **WisePPC webapp**: open **AI Integration → Connections & Permissions** and create a new key.
+1. In Cursor's MCP settings, sign in (connect) next to the `wiseppc` server.
+2. The browser opens WisePPC's approval page, which shows the request comes from Cursor. The user signs in to WisePPC if asked, chooses the business and connects.
+3. Call `get_session_context` to confirm the connection.
 
-Store a key only as the plugin variable `WISEPPC_API_KEY` (Plugins → Configure). **Never** ask them to paste it into chat. **Never** echo it back to the user.
+From the command line (Cursor's CLI agent): `cursor-agent mcp enable wiseppc`, then `cursor-agent mcp login wiseppc`.
 
-### OAuth Path
+- Only a signed-in person can approve a connection; Cursor never sees the WisePPC password.
+- The connection reads what its permissions allow, and its changes follow the same rules as an API key (below). Owners and admins manage both in **AI Integration → Connections & Permissions**; a permission change applies on the next call, with no reconnecting.
 
-Sign-in (OAuth) from Cursor is coming soon; it does not work yet, so use an API key for now. When it is available, the MCP server will handle the flow and no API key needs to be stored in Cursor config.
+### API Key Instead
 
-A sign-in connection works like an API key: it reads what its permissions allow, and its changes follow the same rules (below). Owners and admins manage both in **AI Integration → Connections & Permissions**; a permission change applies on the next call, with no reconnecting.
+API keys (`wpp_ak_*`) are created in the **WisePPC webapp**: open **AI Integration → Connections & Permissions** and create a new key. Keys also work for the WisePPC REST API.
+
+The plugin does not take a key. A key user adds their own server entry to `~/.cursor/mcp.json` (for example named `wiseppc-key`, with `"url": "https://mcp.wiseppc.com/mcp"` and the header `"Authorization": "Bearer wpp_ak_..."`), then disables the plugin's `wiseppc` server in Cursor's MCP settings so only one connection is active. The README has the full example.
+
+**Never** ask the user to paste a key into chat. **Never** echo it back, and never write it into a file yourself.
 
 ### One business per connection
 
-An API key or a sign-in connection belongs to **one business**. `get_session_context(section="business_profiles")` shows it; it cannot switch to another. A different business needs its own key or connection.
+A sign-in connection or an API key belongs to **one business**. `get_session_context(section="business_profiles")` shows it; it cannot switch to another. A different business needs its own sign-in (sign in again and choose it) or its own key.
 
 ## Connection Steps
 
@@ -92,8 +97,8 @@ An API key or a sign-in connection belongs to **one business**. `get_session_con
    - Seller Central is connected (required for Seller datasets; KDP and Vendor users skip this)
 
 2. **Authenticate:**
-   - **Option A:** Set `WISEPPC_API_KEY` in Cursor Plugins → Configure (a `wpp_ak_*` key created in the WisePPC webapp)
-   - **Sign-in (OAuth) from Cursor is coming soon;** use an API key for now
+   - **Sign in** from Cursor's MCP settings next to `wiseppc` (see "Sign In")
+   - **Or** use an API key in the user's own `~/.cursor/mcp.json` entry, with the plugin's `wiseppc` server disabled (see "API Key Instead")
 
 3. **Load session context** (once, at session start):
    ```
@@ -131,8 +136,8 @@ An API key or a sign-in connection belongs to **one business**. `get_session_con
 
 MCP tool results are size-capped, so a long listing or catalog record can come back trimmed. When you need the **whole record**, call the WisePPC REST API:
 
-- **With an API key:** send the same key as `Authorization: Bearer <key>`; never print it.
 - **In a sign-in (OAuth) connection:** call `issue_rest_token` for a short-lived REST token with the same permissions as the connection, never wider (15 minutes by default, up to 60; call it again when it expires). Send it as `Authorization: Bearer <token>`. Keep it in an environment variable; never print it or write it to a file.
+- **With an API key:** send the same key as `Authorization: Bearer <key>`; never print it.
 - **Base:** `https://mcp.wiseppc.com/api/v1`. The OpenAPI document is at `https://mcp.wiseppc.com/api/v1/openapi.json`.
 - **Full listing records:** `GET /sp/listings/2021-08-01/items/{sellerId}` (search) and `GET /sp/listings/2021-08-01/items/{sellerId}/{sku}` (one SKU). Pass `includedData` to pick sections (summaries, attributes, issues, offers, and so on).
 - **Catalog items:** `GET /sp/catalog/2022-04-01/items` (pass `identifiers` with `identifiersType=ASIN`, up to 20) and `GET /sp/catalog/2022-04-01/items/{asin}`. Only ASINs your business profile has a listing for are readable.

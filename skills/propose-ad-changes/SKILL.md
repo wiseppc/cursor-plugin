@@ -22,7 +22,7 @@ description: Submit Amazon changes through WisePPC. Use when analysis points at 
 
 ## How writes work
 
-Changes follow the connection's permissions, for an API key and a sign-in (OAuth) connection alike. Each write operation is one of:
+Changes follow the connection's permissions, for a sign-in (OAuth) connection and an API key alike. Each write operation is one of:
 
 - **gated** (the default for every write on what the connection reads) — a person approves it in the WisePPC webapp; nothing is sent to Amazon until then,
 - **direct** — queued and sent to Amazon **without review**, only where an owner or admin set that operation to direct, or
@@ -40,7 +40,7 @@ Explain the actual path to the user without promising that every change waits fo
 
 3. **Call `describe(kind="operations")`** for the live operations and request schemas. Pass `id` (e.g., `ads.campaigns.update`) to inspect one operation's `request_schema` and examples. Without `id` it also returns guides for rules, failures, Brand Store and assets.
 
-4. **Ads changes go only through `submit_mutation`.** Seller listing writes go through the WisePPC REST listings route (see "Seller Listing Writes"), which queues them the same way. Never call Amazon's write APIs directly.
+4. **Changes go through `submit_mutation`**, including seller listing edits and deletes. Only a whole-listing PUT goes through the WisePPC REST listings route (see "Seller Listing Writes"), which queues it the same way. Never call Amazon's write APIs directly.
 
 5. **Required fields:**
    - `operation` — from `describe(kind="operations")` (e.g., `ads.campaigns.update`, `ads.targets.update`)
@@ -177,7 +177,7 @@ All go through the same `submit_mutation` flow and the same permissions. Ask `de
 - **Brand Store page ASINs** (`ads.brand_store.update_page_asins`): read the page with `get_entities(entity="brand_store_page")`, copy each edit's `path` and `widgetTag` from `wiseppc.asinLists`, and send the **full** new ASIN list for that field (replace, not patch), one page per change. It edits the page **draft**; nothing goes live to shoppers from here, and publishing a page is not available. If the page changed since you read it (`page_changed`, `widget_moved`), re-read and resubmit.
 - **Creative assets** (`ads.assets.create`, `ads.assets.version`): read the library with `get_entities(entity="assets")` first; an existing asset is a `version`, not a new `create`. They wait for a person's approval unless the connection holds them as direct. An asset is visible to every profile of the advertiser and cannot be edited or deleted afterwards, so only upload what the user asked for. The source is a plain public https URL, or a small JPEG/PNG as base64 (never a presigned URL).
 - **Create and delete** (`ads.campaigns`, `ads.ad_groups`, `ads.ads`, `ads.targets` with `.create` / `.delete`; `ads.portfolios.create` and `.update`): see "Creating and Deleting Ads Entities".
-- **Seller listings** (`sp.listings.put`, `patch`, `delete`) and **Multi-Channel Fulfillment** (`sp.fulfillment.cancel`): see the two sections below. Their permissions are per seller and marketplace.
+- **Seller listings** (`sp.listings.patch` and `delete` through `submit_mutation`; `put` over REST only) and **Multi-Channel Fulfillment** (`sp.fulfillment.cancel`): see the two sections below. Their permissions are per seller and marketplace.
 
 ## Creating and Deleting Ads Entities
 
@@ -189,16 +189,17 @@ Creates and deletes use the same `submit_mutation` flow and permissions as updat
 
 ## Seller Listing Writes
 
-Listing edits are `sp.listings.put`, `sp.listings.patch` and `sp.listings.delete`. They appear in `describe(kind="operations")` and on queue rows, but `submit_mutation` refuses them (`use_the_listings_route`). Submit them through the WisePPC REST API (base `https://mcp.wiseppc.com/api/v1`): with the API key, or in a sign-in connection with a short-lived token from `issue_rest_token` (see **connect-wiseppc**). The write is queued exactly like any other: the connection's permissions decide whether it is **gated** or **direct**; the route answers **202** with a mutation id; track it with `get_mutations`.
+Listing writes are `sp.listings.patch`, `sp.listings.delete` and `sp.listings.put`. Call `describe(kind="operations", id=<operation>)` for the body, the attribute-to-permission table and an example. Every write is queued like any other: the connection's permissions decide whether it is **gated** or **direct**; track it with `get_mutations`.
 
+- **Patch and delete go through `submit_mutation`.** The request names the `seller_id`, exactly one `marketplace_id`, and either one `sku` (with a `body` of `{productType, patches: [{op, path, value}]}` for a patch) or `items`: 1 to 100 of `{sku, body}` for a patch, or `{sku}` for a delete, queued as one batch. WisePPC works out the permissions each change needs; a request that sends `ops` or `query` is refused. Add `request.preview: true` to a patch to run Amazon's own dry run first: nothing is queued.
+- **PUT is REST-only.** `sp.listings.put` creates a SKU or replaces a whole listing (`{productType, attributes, requirements?}`). `submit_mutation` refuses it with `use_the_listings_route`, and the refusal names the route: `PUT /sp/listings/2021-08-01/items/{sellerId}/{sku}?marketplaceIds=<id>` on the WisePPC REST API (base `https://mcp.wiseppc.com/api/v1`), in a sign-in connection with a short-lived token from `issue_rest_token` or with the API key on a key connection (see **connect-wiseppc**). It answers **202** with a mutation id. The same REST route also takes `PATCH` and `DELETE`, if you are already working over REST.
 - **Read the listing first**: the `listing_item` dataset, or `GET /sp/listings/2021-08-01/items/{sellerId}/{sku}` for the whole record. Change what exists today.
-- **Routes** (all on `/sp/listings/2021-08-01/items/{sellerId}/{sku}`, one `marketplaceIds` per request): `PATCH` changes named attributes (`{productType, patches: [{op, path, value}]}`); `PUT` creates a SKU or replaces a whole listing (`{productType, attributes, requirements?}`); `DELETE` removes it. `POST /sp/listings/2021-08-01/items/{sellerId}` queues up to 100 SKUs as one batch.
 - **Permissions are per field group**, on the seller and marketplace: title, features (bullet points), description, price, quantity, highlight (Item Highlight), other (every attribute not listed), create (new SKU) and delete. A PATCH needs the group of each attribute path it touches (`/attributes/item_name` is title, `/attributes/purchasable_offer` is price, anything unlisted is other).
 - **A PUT on an existing SKU replaces everything**, so it needs *every* update group, not one. On a SKU that does not exist it is a create and needs the create group. Prefer PATCH for a targeted edit.
 - **Delete is gated only** and cannot be undone: it always waits for a person, whatever the rest of the connection allows.
-- Add `mode=VALIDATION_PREVIEW` to a PUT or PATCH to run Amazon's own dry run: nothing is queued, and it is authorized like the real write.
-- Send an `Idempotency-Key` header (unique per intended change) and a `x-wiseppc-reason` header: 1-3 sentences on **why**, with the numbers, for the person reviewing it. No secrets in it.
-- A mix of gated and direct items in one batch is refused (`split_request`).
+- On REST, add `mode=VALIDATION_PREVIEW` to a PUT or PATCH to run Amazon's own dry run: nothing is queued, and it is authorized like the real write.
+- On `submit_mutation`, send the usual `idempotencyKey` and `metadata.rationale`. On REST, send an `Idempotency-Key` header (unique per intended change) and a `x-wiseppc-reason` header. Either way, 1-3 sentences on **why**, with the numbers, for the person reviewing it. No secrets in it.
+- A mix of gated and direct items in one batch is refused (`split_request`): send them separately.
 
 ## Multi-Channel Fulfillment Cancel
 

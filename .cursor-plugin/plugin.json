@@ -1,7 +1,7 @@
 {
   "name": "wiseppc",
   "displayName": "WisePPC",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Amazon Ads PPC management and Seller Central analytics in Cursor. Analyze campaigns, search terms, ASINs, listings, Brand Store and Attribution, then submit bid, budget, keyword, listing and creative asset changes through WisePPC, approved by a person or sent directly as your connection's permissions decide.",
   "author": {
     "name": "Crystal Logistics Corp / WisePPC"
@@ -26,16 +26,5 @@
   ],
   "category": "data-analytics",
   "skills": "./skills/",
-  "rules": "./rules/",
-  "variables": {
-    "type": "object",
-    "properties": {
-      "WISEPPC_API_KEY": {
-        "type": "string",
-        "title": "WisePPC API key",
-        "description": "WisePPC API key (wpp_ak_…). Used as a Bearer token for https://mcp.wiseppc.com/mcp. Never commit this value."
-      }
-    },
-    "required": ["WISEPPC_API_KEY"]
-  }
+  "rules": "./rules/"
 }
