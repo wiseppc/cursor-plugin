@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.1] - 2026-11-24
+
+### Changed
+
+- The sign-in steps name Cursor's real buttons: open **Cursor Settings → Tools & MCPs**, select **Connect** next to `wiseppc` (listed under **Plugin MCP Servers**), then select **Connect and return** on WisePPC's approval page and let the browser open Cursor.
+- To use an API key instead, disable the plugin's `wiseppc` server in **Cursor Settings → Tools & MCPs**.
+- For current campaign settings, the analysis skill points to `ads_structure`, which holds every Ads level in one place.
+
 ## [0.3.0] - 2026-11-22
 
 ### Changed

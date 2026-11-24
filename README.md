@@ -67,9 +67,9 @@ To update later, run `git pull` in that folder and reload the window.
 
 ### Sign in
 
-1. Open Cursor's MCP settings and sign in (connect) next to the `wiseppc` server.
-2. Your browser opens WisePPC's approval page, which shows the request comes from Cursor. Sign in to WisePPC if asked, choose the business and select **Connect**.
-3. Back in Cursor, ask the agent to call `get_session_context` (or use the **connect-wiseppc** skill) to check the connection.
+1. Open **Cursor Settings → Tools & MCPs**. The plugin's `wiseppc` server (under **Plugin MCP Servers**) shows "Needs authentication". Select **Connect** next to it.
+2. Your browser opens WisePPC's approval page, which shows the request comes from Cursor. Sign in to WisePPC if asked, choose the business and select **Connect and return**. Let the browser open Cursor when it asks.
+3. Cursor now shows the WisePPC tools as enabled. Ask the agent to call `get_session_context` (or use the **connect-wiseppc** skill) to check the connection.
 
 From the command line (Cursor's CLI agent), the same sign-in is:
 
@@ -102,7 +102,7 @@ The plugin does not take a key. To connect with one, add your own server entry t
 }
 ```
 
-Replace `wpp_ak_...` with your key, then **disable the plugin's `wiseppc` server** in Cursor's MCP settings so only one connection is active. The plugin's skills and rule work the same with either server.
+Replace `wpp_ak_...` with your key, then **disable the plugin's `wiseppc` server** in **Cursor Settings → Tools & MCPs** so only one connection is active. The plugin's skills and rule work the same with either server.
 
 **Security:** that file is the only place the key belongs. Never paste a key in chat, commits or logs, and never commit `~/.cursor/mcp.json`.
 

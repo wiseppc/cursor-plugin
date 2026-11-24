@@ -1,6 +1,6 @@
 ---
 name: connect-wiseppc
-description: Connect Cursor to WisePPC MCP by signing in with a WisePPC account (or with an API key). Use when setting up the plugin, signing in from Cursor's MCP settings, connecting with a wpp_ak_ key instead, checking what a connection may read or change (key_grants, opt-ins), listing ads profiles and their target ids, telling Seller, Vendor, Agency and KDP accounts apart, or when a task needs a whole Amazon listing or catalog record through the WisePPC REST API.
+description: Connect Cursor to WisePPC MCP by signing in with a WisePPC account (or with an API key). Use when setting up the plugin, signing in from Cursor Settings → Tools & MCPs (the Connect button), connecting with a wpp_ak_ key instead, checking what a connection may read or change (key_grants, opt-ins), listing ads profiles and their target ids, telling Seller, Vendor, Agency and KDP accounts apart, or when a task needs a whole Amazon listing or catalog record through the WisePPC REST API.
 ---
 
 # Connect WisePPC
@@ -44,7 +44,7 @@ If the user does not have a WisePPC account or Amazon connections, **stop trying
    - This enables seller analytics (sales & traffic, economics, transactions, inventory, fees, brand analytics, listing health)
    - **KDP authors** who only run ads (no physical/book selling via Seller Central) can skip this step; so can **Vendors** (1P accounts have no Seller Central)
 
-4. **Sign in from Cursor** (see "Sign In" below): open Cursor's MCP settings and sign in (connect) next to the `wiseppc` server, then choose the business on WisePPC's approval page and connect. No API key is needed. (Using a key instead is described under "API Key Instead".)
+4. **Sign in from Cursor** (see "Sign In" below): in **Cursor Settings → Tools & MCPs**, select **Connect** next to the `wiseppc` server, then choose the business on WisePPC's approval page and select **Connect and return**. No API key is needed. (Using a key instead is described under "API Key Instead".)
 
 5. **Verify connection:**
    ```
@@ -58,7 +58,7 @@ If the user does not have a WisePPC account or Amazon connections, **stop trying
 
 If MCP tools return authentication errors or no accounts:
 - **First-time users:** Walk them through the cold-start flow above
-- **Existing users:** ask them to sign in again from Cursor's MCP settings (next to `wiseppc`). If they connected an API key in an earlier plugin version, that key is no longer read by the plugin: sign in once, or use the key as described under "API Key Instead"
+- **Existing users:** ask them to sign in again: **Connect** next to `wiseppc` in **Cursor Settings → Tools & MCPs**. If they connected an API key in an earlier plugin version, that key is no longer read by the plugin: sign in once, or use the key as described under "API Key Instead"
 - **Key users:** check that their own `~/.cursor/mcp.json` entry carries the key and that the plugin's `wiseppc` server is disabled, so only one connection is active
 - **Do not invent analytics.** Stop trying tools until authentication succeeds.
 
@@ -68,8 +68,8 @@ The plugin connects by **signing in** with the user's WisePPC account (OAuth). T
 
 ### Sign In
 
-1. In Cursor's MCP settings, sign in (connect) next to the `wiseppc` server.
-2. The browser opens WisePPC's approval page, which shows the request comes from Cursor. The user signs in to WisePPC if asked, chooses the business and connects.
+1. In **Cursor Settings → Tools & MCPs**, the plugin's `wiseppc` server (under **Plugin MCP Servers**) shows "Needs authentication". The user selects **Connect** next to it.
+2. The browser opens WisePPC's approval page, which shows the request comes from Cursor. The user signs in to WisePPC if asked, chooses the business and selects **Connect and return**, then lets the browser open Cursor.
 3. Call `get_session_context` to confirm the connection.
 
 From the command line (Cursor's CLI agent): `cursor-agent mcp enable wiseppc`, then `cursor-agent mcp login wiseppc`.
@@ -81,7 +81,7 @@ From the command line (Cursor's CLI agent): `cursor-agent mcp enable wiseppc`, t
 
 API keys (`wpp_ak_*`) are created in the **WisePPC webapp**: open **AI Integration → Connections & Permissions** and create a new key. Keys also work for the WisePPC REST API.
 
-The plugin does not take a key. A key user adds their own server entry to `~/.cursor/mcp.json` (for example named `wiseppc-key`, with `"url": "https://mcp.wiseppc.com/mcp"` and the header `"Authorization": "Bearer wpp_ak_..."`), then disables the plugin's `wiseppc` server in Cursor's MCP settings so only one connection is active. The README has the full example.
+The plugin does not take a key. A key user adds their own server entry to `~/.cursor/mcp.json` (for example named `wiseppc-key`, with `"url": "https://mcp.wiseppc.com/mcp"` and the header `"Authorization": "Bearer wpp_ak_..."`), then disables the plugin's `wiseppc` server in **Cursor Settings → Tools & MCPs** so only one connection is active. The README has the full example.
 
 **Never** ask the user to paste a key into chat. **Never** echo it back, and never write it into a file yourself.
 
@@ -97,7 +97,7 @@ A sign-in connection or an API key belongs to **one business**. `get_session_con
    - Seller Central is connected (required for Seller datasets; KDP and Vendor users skip this)
 
 2. **Authenticate:**
-   - **Sign in** from Cursor's MCP settings next to `wiseppc` (see "Sign In")
+   - **Sign in:** **Connect** next to `wiseppc` in **Cursor Settings → Tools & MCPs** (see "Sign In")
    - **Or** use an API key in the user's own `~/.cursor/mcp.json` entry, with the plugin's `wiseppc` server disabled (see "API Key Instead")
 
 3. **Load session context** (once, at session start):

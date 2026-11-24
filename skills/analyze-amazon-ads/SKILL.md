@@ -64,7 +64,7 @@ The structured `query` tool is preferred over raw SQL `run_sql`. A rejected `que
 
 - **"What should I focus on?"** → `get_report(report="health_check")` (budget, waste, inventory, listing health, performance, anomalies), then drill in with `query`.
 - **Per-ASIN ad efficiency** → `get_report(report="product_performance")`; **products with no ad impressions** → `get_report(report="unadvertised_products")`.
-- **Current campaign settings** → `get_entities` with `entity="campaign_settings"` (compact rows) or `entity="campaign_details"` (one campaign, `ids` with its id), or `query` on `ads_campaigns` and friends. For Amazon-shaped objects (to read before a change), use `get_entities` (`entity`: campaigns, ad_groups, ads, targets, portfolios, assets).
+- **Current campaign settings** → `get_entities` with `entity="campaign_settings"` (compact rows) or `entity="campaign_details"` (one campaign, `ids` with its id), or `query` on `ads_structure` (every level in one place). For Amazon-shaped objects (to read before a change), use `get_entities` (`entity`: campaigns, ad_groups, ads, targets, portfolios, assets).
 - **What changed and when** → `ads_change_history` via `query`, or `get_history` for one seller listing (`sku`) or catalog item (`asin`), with an `amazon_sp` target that names the marketplace.
 - **Methodology** → `describe(kind="runbooks")` (no `id` lists them; pass one, e.g. `id="search_term_analysis"`, for the steps). **Read the runbook before writing its queries.** See "Runbooks" below.
 

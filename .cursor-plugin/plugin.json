@@ -1,7 +1,7 @@
 {
   "name": "wiseppc",
   "displayName": "WisePPC",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Amazon Ads PPC management and Seller Central analytics in Cursor. Analyze campaigns, search terms, ASINs, listings, Brand Store and Attribution, then submit bid, budget, keyword, listing and creative asset changes through WisePPC, approved by a person or sent directly as your connection's permissions decide.",
   "author": {
     "name": "Crystal Logistics Corp / WisePPC"
